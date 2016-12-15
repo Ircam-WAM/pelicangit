@@ -9,15 +9,17 @@ import pwd
 logger = logging.getLogger('pelicangit')
 
 def main():
-    
+
     args = parse_arguments()
     settings = read_settings(args.settings)
-   
+
     user = settings['PELICANGIT_USER']
     change_user(user)
-    
+
     setup_logging()
-    
+
+    repo_is_local_dir = settings['PELICANGIT_REPO_IS_LOCAL_DIR']
+
     source_repo = GitRepo(
         settings['PELICANGIT_SOURCE_REPO'],
         settings['PELICANGIT_SOURCE_REMOTE'],
@@ -34,10 +36,10 @@ def main():
 
     port = settings['PELICANGIT_PORT']
 
-    httpd = GitHookServer(('', port), GitHookRequestHandler, source_repo, deploy_repo, whitelisted_files)
+    httpd = GitHookServer(('', port), GitHookRequestHandler, source_repo, deploy_repo, whitelisted_files, repo_is_local_dir)
     logger.info("PelicanGit listening on port " + str(port))
     httpd.serve_forever()
-    
+
 def change_user(user):
     pw_record = pwd.getpwnam(user)
     os.setgid(pw_record.pw_uid)

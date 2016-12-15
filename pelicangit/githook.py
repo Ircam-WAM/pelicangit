@@ -11,10 +11,11 @@ ERROR_RESPONSE_BODY = "<h1>Error</h1>"
 
 class GitHookServer(socketserver.TCPServer):
 
-    def __init__(self, server_address, handler_class, source_repo, deploy_repo, whitelisted_files):
+    def __init__(self, server_address, handler_class, source_repo, deploy_repo, whitelisted_files, repo_is_local_dir=False):
         self.source_repo = source_repo
         self.deploy_repo = deploy_repo
         self.whitelisted_files = whitelisted_files
+        self.repo_is_local_dir = repo_is_local_dir
         socketserver.TCPServer.__init__(self, server_address, handler_class)
         return
 
@@ -25,19 +26,22 @@ class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         try:
-            #Hard reset both repos so they match the remote (origin) master branches
-            self.hard_reset_repos()
+            if not self.repo_is_local_dir:
+                #Hard reset both repos so they match the remote (origin) master branches
+                self.hard_reset_repos()
 
-            # Git Remove all deploy_repo files (except those whitelisted) and then rebuild with pelican
-            self.nuke_git_cwd(self.server.deploy_repo)
-            main()
+                # Git Remove all deploy_repo files (except those whitelisted) and then rebuild with pelican
+                self.nuke_git_cwd(self.server.deploy_repo)
+                main()
 
-            # Add all files newly created by pelican, then commit and push everything
-            self.server.deploy_repo.add(['.'])
+                # Add all files newly created by pelican, then commit and push everything
+                self.server.deploy_repo.add(['.'])
 
-            commit_message = self.server.source_repo.log(['-n1', '--pretty=format:"%h %B"'])
-            self.server.deploy_repo.commit(commit_message, ['-a'])
-            self.server.deploy_repo.push([self.server.deploy_repo.origin, self.server.deploy_repo.master])
+                commit_message = self.server.source_repo.log(['-n1', '--pretty=format:"%h %B"'])
+                self.server.deploy_repo.commit(commit_message, ['-a'])
+                self.server.deploy_repo.push([self.server.deploy_repo.origin, self.server.deploy_repo.master])
+            else:
+                main()
 
             self.do_response(POST_RESPONSE_BODY)
         except Exception as e:
