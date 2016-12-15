@@ -1,5 +1,5 @@
-import SocketServer
-import SimpleHTTPServer
+import socketserver
+import http.server
 import os
 import re
 from pelican import main
@@ -9,16 +9,16 @@ GET_RESPONSE_BODY = "<h1>PelicanGit is Running</h1>"
 POST_RESPONSE_BODY = "<h1>Pelican Project Rebuilt</h1>"
 ERROR_RESPONSE_BODY = "<h1>Error</h1>"
 
-class GitHookServer(SocketServer.TCPServer):
-    
+class GitHookServer(socketserver.TCPServer):
+
     def __init__(self, server_address, handler_class, source_repo, deploy_repo, whitelisted_files):
         self.source_repo = source_repo
         self.deploy_repo = deploy_repo
         self.whitelisted_files = whitelisted_files
-        SocketServer.TCPServer.__init__(self, server_address, handler_class)
+        socketserver.TCPServer.__init__(self, server_address, handler_class)
         return
 
-class GitHookRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         self.do_response(GET_RESPONSE_BODY)
@@ -27,9 +27,9 @@ class GitHookRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         try:
             #Hard reset both repos so they match the remote (origin) master branches
             self.hard_reset_repos()
-            
+
             # Git Remove all deploy_repo files (except those whitelisted) and then rebuild with pelican
-            self.nuke_git_cwd(self.server.deploy_repo) 
+            self.nuke_git_cwd(self.server.deploy_repo)
             main()
 
             # Add all files newly created by pelican, then commit and push everything
@@ -41,8 +41,8 @@ class GitHookRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
             self.do_response(POST_RESPONSE_BODY)
         except Exception as e:
-            print e
-            
+            print(e)
+
             #In the event of an excepion, hard reset both repos so they match the remote (origin) master branches
 #            self.hard_reset_repos()
             self.do_response(ERROR_RESPONSE_BODY)
@@ -58,7 +58,7 @@ class GitHookRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def hard_reset_repos(self):
         self.server.source_repo.fetch([self.server.source_repo.origin])
         self.server.source_repo.reset(['--hard', self.server.source_repo.originMaster])
-        
+
         self.server.deploy_repo.fetch([self.server.deploy_repo.origin])
         self.server.deploy_repo.reset(['--hard', self.server.deploy_repo.originMaster])
 
