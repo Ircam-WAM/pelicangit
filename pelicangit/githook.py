@@ -21,14 +21,14 @@ class GitHookServer(socketserver.TCPServer):
 class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
-        self.do_response(GET_RESPONSE_BODY)
+        self.do_response(GET_RESPONSE_BODY.encode())
 
     def do_POST(self):
         try:
-            if not self.server.deploy_repo.is_local_dir:
-                #Hard reset both repos so they match the remote (origin) master branches
-                self.hard_reset_repos()
+            #Hard reset both repos so they match the remote (origin) master branches
+            self.hard_reset_repos()
 
+            if not self.server.deploy_repo.is_local_dir:
                 # Git Remove all deploy_repo files (except those whitelisted) and then rebuild with pelican
                 self.nuke_git_cwd(self.server.deploy_repo)
                 main()
@@ -42,13 +42,14 @@ class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 main()
 
-            self.do_response(POST_RESPONSE_BODY)
+            self.do_response(POST_RESPONSE_BODY.encode())
+
         except Exception as e:
             print(e)
 
             #In the event of an excepion, hard reset both repos so they match the remote (origin) master branches
-#            self.hard_reset_repos()
-            self.do_response(ERROR_RESPONSE_BODY)
+            self.hard_reset_repos()
+            self.do_response(ERROR_RESPONSE_BODY.encode())
 
 
     def do_response(self, resBody):
