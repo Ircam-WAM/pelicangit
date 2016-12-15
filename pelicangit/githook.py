@@ -26,9 +26,11 @@ class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         try:
             #Hard reset both repos so they match the remote (origin) master branches
-            self.hard_reset_repos()
+            self.hard_reset_source_repos()
 
             if not self.server.deploy_repo.is_local_dir:
+                self.hard_reset_deploy_repos()
+
                 # Git Remove all deploy_repo files (except those whitelisted) and then rebuild with pelican
                 self.nuke_git_cwd(self.server.deploy_repo)
                 main()
@@ -48,7 +50,10 @@ class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
             print(e)
 
             #In the event of an excepion, hard reset both repos so they match the remote (origin) master branches
-            self.hard_reset_repos()
+            self.hard_reset_source_repos()
+            if not self.server.deploy_repo.is_local_dir:
+                self.hard_reset_deploy_repos()
+
             self.do_response(ERROR_RESPONSE_BODY.encode())
 
 
@@ -59,10 +64,11 @@ class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(resBody)
 
-    def hard_reset_repos(self):
+    def hard_reset_source_repos(self):
         self.server.source_repo.fetch([self.server.source_repo.origin])
         self.server.source_repo.reset(['--hard', self.server.source_repo.originMaster])
 
+    def hard_reset_deploy_repos(self):
         self.server.deploy_repo.fetch([self.server.deploy_repo.origin])
         self.server.deploy_repo.reset(['--hard', self.server.deploy_repo.originMaster])
 
