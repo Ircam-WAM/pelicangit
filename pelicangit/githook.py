@@ -11,24 +11,21 @@ ERROR_RESPONSE_BODY = "<h1>Error</h1>"
 
 class GitHookServer(socketserver.TCPServer):
 
-    def __init__(self, server_address, handler_class, source_repo, deploy_repo, whitelisted_files, repo_is_local_dir=False):
+    def __init__(self, server_address, handler_class, source_repo, deploy_repo, whitelisted_files):
         self.source_repo = source_repo
         self.deploy_repo = deploy_repo
         self.whitelisted_files = whitelisted_files
-        socketserver.TCPServer.__init__(self, server_address, handler_class(repo_is_local_dir))
+        socketserver.TCPServer.__init__(self, server_address, handler_class)
         return
 
 class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
-
-    def __init__(self, repo_is_local_dir=False):
-        self.repo_is_local_dir = repo_is_local_dir
 
     def do_GET(self):
         self.do_response(GET_RESPONSE_BODY)
 
     def do_POST(self):
         try:
-            if not self.repo_is_local_dir:
+            if not self.server.deploy_repo.is_local_dir:
                 #Hard reset both repos so they match the remote (origin) master branches
                 self.hard_reset_repos()
 

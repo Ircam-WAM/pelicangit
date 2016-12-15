@@ -18,8 +18,6 @@ def main():
 
     setup_logging()
 
-    repo_is_local_dir = settings['PELICANGIT_REPO_IS_LOCAL_DIR']
-
     source_repo = GitRepo(
         settings['PELICANGIT_SOURCE_REPO'],
         settings['PELICANGIT_SOURCE_REMOTE'],
@@ -29,14 +27,15 @@ def main():
     deploy_repo = GitRepo(
         settings['PELICANGIT_DEPLOY_REPO'],
         settings['PELICANGIT_DEPLOY_REMOTE'],
-        settings['PELICANGIT_DEPLOY_BRANCH']
+        settings['PELICANGIT_DEPLOY_BRANCH'],
+        settings['PELICANGIT_DEPLOY_IS_LOCAL_DIR']
     )
 
     whitelisted_files = settings['PELICANGIT_WHITELISTED_FILES']
 
     port = settings['PELICANGIT_PORT']
 
-    httpd = GitHookServer(('', port), GitHookRequestHandler, source_repo, deploy_repo, whitelisted_files, repo_is_local_dir)
+    httpd = GitHookServer(('', port), GitHookRequestHandler, source_repo, deploy_repo, whitelisted_files)
     logger.info("PelicanGit listening on port " + str(port))
     httpd.serve_forever()
 
