@@ -40,6 +40,6 @@ class GitRepo:
         args.insert(0, 'git')
 
         output = sp.check_output(args, cwd=self.repoDir)
-        logger.debug(output)
+        logger.debug(output.decode())
 
         return output
