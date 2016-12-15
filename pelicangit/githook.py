@@ -15,11 +15,13 @@ class GitHookServer(socketserver.TCPServer):
         self.source_repo = source_repo
         self.deploy_repo = deploy_repo
         self.whitelisted_files = whitelisted_files
-        self.repo_is_local_dir = repo_is_local_dir
-        socketserver.TCPServer.__init__(self, server_address, handler_class)
+        socketserver.TCPServer.__init__(self, server_address, handler_class(repo_is_local_dir))
         return
 
 class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
+
+    def __init__(self, repo_is_local_dir=False):
+        self.repo_is_local_dir = repo_is_local_dir
 
     def do_GET(self):
         self.do_response(GET_RESPONSE_BODY)
