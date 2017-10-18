@@ -42,7 +42,10 @@ class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.server.deploy_repo.commit(commit_message, ['-a'])
                 self.server.deploy_repo.push([self.server.deploy_repo.origin, self.server.deploy_repo.master])
             else:
-                main()
+                try:
+                    main()
+                except:
+                    pass
 
             self.do_response(POST_RESPONSE_BODY.encode())
 
