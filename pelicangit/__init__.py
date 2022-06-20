@@ -21,14 +21,16 @@ def main():
     source_repo = GitRepo(
         settings['PELICANGIT_SOURCE_REPO'],
         settings['PELICANGIT_SOURCE_REMOTE'],
-        settings['PELICANGIT_SOURCE_BRANCH']
+        settings['PELICANGIT_SOURCE_BRANCH'],
+        branches = settings['PELICANGIT_SOURCE_BRANCHES'],
     )
 
     deploy_repo = GitRepo(
         settings['PELICANGIT_DEPLOY_REPO'],
         settings['PELICANGIT_DEPLOY_REMOTE'],
         settings['PELICANGIT_DEPLOY_BRANCH'],
-        settings['PELICANGIT_DEPLOY_IS_LOCAL_DIR']
+        settings['PELICANGIT_DEPLOY_IS_LOCAL_DIR'],
+        branches = settings['PELICANGIT_SOURCE_BRANCHES'],
     )
 
     whitelisted_files = settings['PELICANGIT_WHITELISTED_FILES']

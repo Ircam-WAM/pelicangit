@@ -3,12 +3,14 @@ import logging
 
 logger = logging.getLogger('pelicangit')
 
+
 class GitRepo:
-    def __init__(self, repoDir, origin, master, is_local_dir=False):
+    def __init__(self, repoDir, origin, branch, is_local_dir=False, branches=None):
         self.repoDir = repoDir
         self.origin = origin
-        self.master = master
-        self.originMaster = origin + '/' + master
+        self.branch = branch
+        self.branches = branches
+        self.originMaster = origin + '/' + branch
         self.is_local_dir = is_local_dir
 
     def log(self, args):
@@ -34,6 +36,9 @@ class GitRepo:
 
     def log(self, args):
         return self.git_exec('log', args)
+
+    def checkout(self, args):
+        return self.git_exec('checkout', args)
 
     def git_exec(self, firstArg, args):
         args.insert(0, firstArg)
