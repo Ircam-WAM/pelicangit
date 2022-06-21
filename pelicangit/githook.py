@@ -79,12 +79,12 @@ class GitHookRequestHandler(http.server.SimpleHTTPRequestHandler):
     def hard_reset_source_repos(self, branch):
         self.server.source_repo.fetch([self.server.source_repo.origin])
         self.server.source_repo.checkout([branch])
-        self.server.source_repo.reset(['--hard', branch])
+        self.server.source_repo.reset(['--hard', 'origin/' + branch])
 
     def hard_reset_deploy_repos(self, branch=None):
         self.server.deploy_repo.fetch([self.server.deploy_repo.origin])
         self.server.deploy_repo.checkout([branch])
-        self.server.deploy_repo.reset(['--hard', branch])
+        self.server.deploy_repo.reset(['--hard', 'origin/' + branch])
 
     def nuke_git_cwd(self, git_repo):
         for root, dirs, files in os.walk(git_repo.repoDir):
